@@ -2,7 +2,7 @@
   "name": "react-carousel-component",
   "version": "1.0.0",
   "description": "",
-  "main": "src/index.js",
+  "main": "./src/index.jsx",
   "dependencies": {
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
