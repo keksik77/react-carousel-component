@@ -5,6 +5,7 @@ ul{
     list-style: none;
     width: 100%;
     display: flex;
+    cursor: pointer;
 }
 
 li{
@@ -12,11 +13,12 @@ li{
     flex-flow: column;
     margin: 0;
     position: relative;
-    background: #000;
+    background: rgba(0, 0, 0, 0.2);
     list-style: none;
     color: white;
-    height: 400px;
+    height: 600px;
     min-width: 100%;
+    overflow: hidden;
 }
 
 .wrapper {

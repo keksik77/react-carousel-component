@@ -1,15 +1,38 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import "./style.css";
 
 let dragX1 = 0;
 let dragPresent = 0;
 
-const Carousel = (props) => {
-  const [sliderPosition, setSliderPosition] = useState(0);
+const Carousel = ({ children, slidesCount, infinity }) => {
+  const cellSize = 100 / slidesCount;
+  const [sliderPosition, setSliderPosition] = useState(infinity ? -100 : 0);
   const [sliderWidth, setSliderWidth] = useState(null);
   const sliderElement = useRef(null);
+  const [maxPosition, setMaxPosition] = useState(
+    -children.length * cellSize + cellSize
+  );
+  const [minPosition, setMinPosition] = useState(infinity ? -100 : 0);
+
+  const Slide = useMemo(
+    () => (child, i) => {
+      return (
+        <li
+          className="slide"
+          style={{ minWidth: `${100 / slidesCount}%` }}
+          key={i}
+        >
+          {child}
+        </li>
+      );
+    },
+    [slidesCount]
+  );
 
   useEffect(() => {
+    sliderElement.current.style.transform = `translateX(${sliderPosition}%)`;
+    sliderElement.current.style.transition = "null";
+
     setSliderWidth(sliderElement.current.offsetWidth);
     window.addEventListener("resize", () => {
       setSliderWidth(sliderElement.current.offsetWidth);
@@ -20,171 +43,83 @@ const Carousel = (props) => {
     };
   }, []);
 
-  useEffect(() => {
-    sliderElement.current.style.transform = `translateX(${sliderPosition}%)`;
-    sliderElement.current.style.transition = `all .35s ease-in-out`;
-  }, [sliderPosition]);
-
-  /*var slider = document.getElementById('slider'),
-    sliderItems = document.getElementById('slides'),
-    prev = document.getElementById('prev'),
-    next = document.getElementById('next');
-  */
-
-  function slide(wrapper, items, prev, next) {
-    var posX1 = 0,
-      posX2 = 0,
-      posInitial,
-      posFinal,
-      threshold = 100,
-      slides = items.getElementsByClassName("slide"),
-      slidesLength = slides.length,
-      slideSize = items.getElementsByClassName("slide")[0].offsetWidth,
-      firstSlide = slides[0],
-      lastSlide = slides[slidesLength - 1],
-      cloneFirst = firstSlide.cloneNode(true),
-      cloneLast = lastSlide.cloneNode(true),
-      index = 0,
-      allowShift = true;
-
-    // Clone first and last slide
-    items.appendChild(cloneFirst);
-    items.insertBefore(cloneLast, firstSlide);
-    wrapper.classList.add("loaded");
-
-    // Mouse events
-    items.onmousedown = dragStart;
-
-    // Touch events
-    items.addEventListener("touchstart", dragStart);
-    items.addEventListener("touchend", dragEnd);
-    items.addEventListener("touchmove", dragAction);
-
-    // Click events
-    prev.addEventListener("click", function () {
-      shiftSlide(-1);
-    });
-    next.addEventListener("click", function () {
-      shiftSlide(1);
-    });
-
-    // Transition events
-    items.addEventListener("transitionend", checkIndex);
-
-    function dragStart(e) {
-      e = e || window.event;
-      e.preventDefault();
-      posInitial = items.offsetLeft;
-
-      if (e.type == "touchstart") {
-        posX1 = e.touches[0].clientX;
-      } else {
-        posX1 = e.clientX;
-        document.onmouseup = dragEnd;
-        document.onmousemove = dragAction;
-      }
+  const loopFunc = (position) => {
+    if (position > minPosition && dragPresent < 0) {
+      console.log("right", dragPresent);
+      sliderElement.current.style.transform = `translateX(${
+        position + maxPosition - cellSize
+      }%)`;
+      sliderElement.current.style.transition = "null";
+      setSliderPosition(position + maxPosition - cellSize);
+    } else if (position < maxPosition - cellSize && dragPresent > 0) {
+      console.log("left");
+      sliderElement.current.style.transform = `translateX(${
+        position - maxPosition + cellSize
+      }%)`;
+      sliderElement.current.style.transition = "null";
+      setSliderPosition(position - maxPosition + cellSize);
     }
+  };
 
-    function dragAction(e) {
-      e = e || window.event;
-
-      if (e.type == "touchmove") {
-        posX2 = posX1 - e.touches[0].clientX;
-        posX1 = e.touches[0].clientX;
-      } else {
-        posX2 = posX1 - e.clientX;
-        posX1 = e.clientX;
-      }
-      items.style.left = items.offsetLeft - posX2 + "px";
+  const checkSliderLimit = (newSliderPosition) => {
+    if (newSliderPosition > minPosition) {
+      newSliderPosition = minPosition;
+      sliderElement.current.style.transform = `translateX(${newSliderPosition}%)`;
+      sliderElement.current.style.transition = `all .35s ease-in-out`;
+    } else if (newSliderPosition < maxPosition + (slidesCount - 1) * cellSize) {
+      newSliderPosition = maxPosition + (slidesCount - 1) * cellSize;
+      sliderElement.current.style.transform = `translateX(${newSliderPosition}%)`;
+      sliderElement.current.style.transition = `all .35s ease-in-out`;
     }
+    return newSliderPosition;
+  };
 
-    function dragEnd(e) {
-      posFinal = items.offsetLeft;
-      if (posFinal - posInitial < -threshold) {
-        shiftSlide(1, "drag");
-      } else if (posFinal - posInitial > threshold) {
-        shiftSlide(-1, "drag");
-      } else {
-        items.style.left = posInitial + "px";
-      }
-
-      document.onmouseup = null;
-      document.onmousemove = null;
-    }
-
-    function shiftSlide(dir, action) {
-      items.classList.add("shifting");
-
-      if (allowShift) {
-        if (!action) {
-          posInitial = items.offsetLeft;
-        }
-
-        if (dir == 1) {
-          items.style.left = posInitial - slideSize + "px";
-          index++;
-        } else if (dir == -1) {
-          items.style.left = posInitial + slideSize + "px";
-          index--;
-        }
-      }
-
-      allowShift = false;
-    }
-
-    function checkIndex() {
-      items.classList.remove("shifting");
-
-      if (index == -1) {
-        items.style.left = -(slidesLength * slideSize) + "px";
-        index = slidesLength - 1;
-      }
-
-      if (index == slidesLength) {
-        items.style.left = -(1 * slideSize) + "px";
-        index = 0;
-      }
-
-      allowShift = true;
-    }
-  }
-
-  /*function dragEnd(e) {
-      posFinal = items.offsetLeft;
-      if (posFinal - posInitial < -threshold) {
-        shiftSlide(1, "drag");
-      } else if (posFinal - posInitial > threshold) {
-        shiftSlide(-1, "drag");
-      } else {
-        items.style.left = posInitial + "px";
-      }
-
-      document.onmouseup = null;
-      document.onmousemove = null;
-    }*/
-
-  const dragEnd = () => {
-    const additionalOffset = dragPresent < 0 ? -0.2 : 0.2;
+  const dragEnd = (event) => {
+    //const additionalOffset = dragPresent < 0 ? -0.2 : 0.2;
     const dragOfSlides = Math.round(
-      (dragPresent * props.slidesCount) / 100 + additionalOffset
+      (dragPresent * slidesCount) / 100 /*+ additionalOffset*/
     );
 
+    let newSliderPosition = sliderPosition - dragOfSlides * cellSize;
+
+    /*if (newSliderPosition > 0) {
+      newSliderPosition = 0;
+      sliderElement.current.style.transform = `translateX(${newSliderPosition}%)`;
+      sliderElement.current.style.transition = `all .35s ease-in-out`;
+    } else if (
+      newSliderPosition <
+      -(children.length - slidesCount) * (100 / slidesCount)
+    ) {
+      newSliderPosition =
+        -(children.length - slidesCount) * (100 / slidesCount);
+      sliderElement.current.style.transform = `translateX(${newSliderPosition}%)`;
+      sliderElement.current.style.transition = `all .35s ease-in-out`;
+    }*/
+
+    if (!infinity) {
+      newSliderPosition = checkSliderLimit(newSliderPosition);
+    }
+
     if (dragOfSlides) {
-      setSliderPosition(
-        sliderPosition - dragOfSlides * (100 / props.slidesCount)
-      );
+      sliderElement.current.style.transform = `translateX(${newSliderPosition}%)`;
+      sliderElement.current.style.transition = `all .35s ease-in-out`;
+      setSliderPosition(newSliderPosition);
     } else {
       sliderElement.current.style.transform = `translateX(${sliderPosition}%)`;
       sliderElement.current.style.transition = `all .35s ease-in-out`;
     }
-
-    dragPresent = 0;
-    document.onmouseup = null;
-    document.onmousemove = null;
+    if (event.type === "mouseup") {
+      document.onmouseup = null;
+      document.onmousemove = null;
+    }
   };
 
   const dragAction = (event) => {
-    dragPresent = ((dragX1 - event.clientX) / sliderWidth) * 100;
+    if (event.type === "mousemove") {
+      dragPresent = ((dragX1 - event.clientX) / sliderWidth) * 80; //!lower speed of drag slide
+    } else {
+      dragPresent = ((dragX1 - event.touches[0].clientX) / sliderWidth) * 80;
+    }
 
     sliderElement.current.style.transform = `translateX(${
       sliderPosition - dragPresent
@@ -193,10 +128,14 @@ const Carousel = (props) => {
   };
 
   const dragStart = (event) => {
-    event.preventDefault();
-    dragX1 = event.clientX;
-    document.onmousemove = dragAction;
-    document.onmouseup = dragEnd;
+    if (event.type === "mousedown") {
+      event.preventDefault();
+      dragX1 = event.clientX;
+      document.onmousemove = dragAction;
+      document.onmouseup = dragEnd;
+    } else {
+      dragX1 = event.touches[0].clientX;
+    }
   };
 
   return (
@@ -205,22 +144,18 @@ const Carousel = (props) => {
         <ul
           ref={sliderElement}
           className="slides"
-          //onTouchStart={dragStart}*/
-          /*onTouchMove={dragAction}*/
-          /*onTouchEnd={dragEnd}*/
+          onTouchStart={dragStart}
+          onTouchMove={dragAction}
+          onTouchEnd={dragEnd}
           onMouseDown={dragStart}
+          onTransitionEnd={() => {
+            if (infinity) loopFunc(sliderPosition);
+            dragPresent = 0;
+          }}
         >
-          {props.children.map((child, i) => {
-            return (
-              <li
-                className="slide"
-                style={{ minWidth: `${100 / props.slidesCount}%` }}
-                key={i}
-              >
-                {child}
-              </li>
-            );
-          })}
+          {infinity && children.slice(children.length - slidesCount).map(Slide)}
+          {children.map(Slide)}
+          {infinity && children.slice(0, slidesCount).map(Slide)}
         </ul>
       </div>
     </>
