@@ -1,0 +1,31 @@
+.pg_container{
+    display: flex;
+    align-items: center;
+    margin: 5px;
+    position: absolute;
+    z-index: 10000000;
+    bottom: 0;
+    padding: 3px;
+    border-radius: 3px;
+    background-color: rgba(255, 255, 255, 0.6);
+}
+
+.pg_cell {
+    width: 25px;
+    height: 25px;
+    margin-right: 5px;
+    text-align: center;
+    border-radius: 3px;
+    line-height: 25px;
+    cursor: pointer;
+}
+
+.pg_cell:last-child {
+    margin-right: 0;
+}
+
+.pg_cell:hover, .pg_active {
+    background-color: rgb(94, 193, 255);
+    color: white;
+    transition: .2s;
+}
