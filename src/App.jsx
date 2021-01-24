@@ -21,7 +21,7 @@ const App = () => {
     <>
       {!loading && Array.isArray(data) && (
         <>
-          <Carousel slidesCount={3} infinity={false} pagination={true} paginationSize={3}>
+          <Carousel slidesCount={3} infinity={true} pagination={true} paginationSize={5}>
             {/*[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((number, i) => {
               return (
                 <div key={i} style={{ textAlign: 'center', border: '2px solid black' }}>

@@ -27,3 +27,35 @@ li{
     border-radius: 3px;
     position: relative;
 }
+
+.right_arrow, .left_arrow {
+    position: absolute;
+    font-family: monospace, sans-serif;
+    bottom: 50%;
+    margin: auto;
+    top: 50%;
+    font-size: 70px;
+    width: 50px;
+    height: 75px;
+    text-align: center;
+    line-height: 64px;
+    border-radius: 3px;
+    z-index: 1000000000;
+    background: rgba(255,255,255,0.2);
+    cursor: pointer;
+    color: rgba(0,0,0,0.4);
+}
+
+.right_arrow:hover, .left_arrow:hover{
+    background: rgba(255,255,255,0.6);
+    color: black;
+    transition: .2s;
+}
+
+.right_arrow{
+    right: 5px;
+}
+
+.left_arrow{
+    left: 5px;
+}

@@ -24,7 +24,7 @@ const Carousel = ({ children, slidesCount, infinity, pagination, paginationSize 
     return position;
   }, [sliderPosition]);
 
-  const Slide = useMemo(
+  const CellComponent = useMemo(
     () => (child, i) => (
       <li className="slide" style={{ minWidth: `${cellSize}%` }} key={i}>
         {child}
@@ -63,11 +63,11 @@ const Carousel = ({ children, slidesCount, infinity, pagination, paginationSize 
     if (newSliderPosition > minPosition) {
       newSliderPosition = minPosition;
       sliderElement.current.style.transform = `translateX(${newSliderPosition}%)`;
-      sliderElement.current.style.transition = `all .35s ease-in-out`;
+      sliderElement.current.style.transition = `all .25s ease-in-out`;
     } else if (newSliderPosition < maxPosition) {
       newSliderPosition = maxPosition;
       sliderElement.current.style.transform = `translateX(${newSliderPosition}%)`;
-      sliderElement.current.style.transition = `all .35s ease-in-out`;
+      sliderElement.current.style.transition = `all .25s ease-in-out`;
     }
     return newSliderPosition;
   };
@@ -78,19 +78,17 @@ const Carousel = ({ children, slidesCount, infinity, pagination, paginationSize 
 
     let newSliderPosition = sliderPosition - dragOfSlides * cellSize;
 
-    if (!infinity) {
-      newSliderPosition = checkSliderLimit(newSliderPosition);
-    }
+    if (!infinity) newSliderPosition = checkSliderLimit(newSliderPosition);
 
     if (dragOfSlides) {
       sliderElement.current.style.transform = `translateX(${newSliderPosition}%)`;
-      sliderElement.current.style.transition = `all .35s ease-in-out`;
+      sliderElement.current.style.transition = `all .25s ease-in-out`;
       setSliderPosition(newSliderPosition);
     } else {
       sliderElement.current.style.transform = `translateX(${sliderPosition}%)`;
-      sliderElement.current.style.transition = `all .35s ease-in-out`;
+      sliderElement.current.style.transition = `all .25s ease-in-out`;
     }
-    if (event.type === 'mouseup') {
+    if (event && event.type === 'mouseup') {
       document.onmouseup = null;
       document.onmousemove = null;
     }
@@ -98,7 +96,7 @@ const Carousel = ({ children, slidesCount, infinity, pagination, paginationSize 
 
   const dragAction = (event) => {
     if (event.type === 'mousemove') {
-      dragPresent = ((dragX1 - event.clientX) / sliderWidth) * 80; //!lower speed of drag slide
+      dragPresent = ((dragX1 - event.clientX) / sliderWidth) * 100;
     } else {
       dragPresent = ((dragX1 - event.touches[0].clientX) / sliderWidth) * 80;
     }
@@ -124,8 +122,13 @@ const Carousel = ({ children, slidesCount, infinity, pagination, paginationSize 
     else newPosition = -(cell - 1) * cellSize;
 
     setSliderPosition(newPosition);
-    sliderElement.current.style.transition = `all .35s ease-in-out`;
+    sliderElement.current.style.transition = `all .25s ease-in-out`;
     sliderElement.current.style.transform = `translateX(${newPosition}%)`;
+  };
+
+  const handlerArrowClick = (directionLeft) => () => {
+    dragPresent = directionLeft ? -100 / slidesCount : 100 / slidesCount;
+    dragEnd();
   };
 
   return (
@@ -145,9 +148,9 @@ const Carousel = ({ children, slidesCount, infinity, pagination, paginationSize 
             dragPresent = 0;
           }}
         >
-          {infinity && children.slice(children.length - slidesCount).map(Slide)}
-          {children.map(Slide)}
-          {infinity && children.slice(0, slidesCount).map(Slide)}
+          {infinity && children.slice(children.length - slidesCount).map(CellComponent)}
+          {children.map(CellComponent)}
+          {infinity && children.slice(0, slidesCount).map(CellComponent)}
         </ul>
         {pagination && (
           <Pagination
@@ -157,6 +160,16 @@ const Carousel = ({ children, slidesCount, infinity, pagination, paginationSize 
             visibleCellsNum={paginationSize}
             infinity={infinity}
           />
+        )}
+        {(sliderPosition < 0 || infinity) && (
+          <div className={'left_arrow'} onClick={handlerArrowClick(true)}>
+            &#8249;
+          </div>
+        )}
+        {(sliderPosition > maxPosition || infinity) && (
+          <div className={'right_arrow'} onClick={handlerArrowClick(false)}>
+            &#8250;
+          </div>
         )}
       </div>
     </>
