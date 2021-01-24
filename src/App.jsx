@@ -5,8 +5,9 @@ const imageApiUrl =
   'https://www.flickr.com/services/rest/?method=flickr.photos.search&api_key=d139d88fe734f56137ac0532cdadd2db&tags=scenery,lake&tag_mode=all&extras=url_h&format=json&nojsoncallback=1';
 
 const App = () => {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
+  const [numOfCells, setNumOfCells] = useState(3);
 
   useEffect(() => {
     fetch(imageApiUrl).then((response) => {
@@ -21,7 +22,7 @@ const App = () => {
     <>
       {!loading && Array.isArray(data) && (
         <>
-          <Carousel slidesCount={3} infinity={true} pagination={true} paginationSize={5}>
+          <Carousel numOfCells={numOfCells} infinity={true} pagination={true} paginationSize={5}>
             {/*[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((number, i) => {
               return (
                 <div key={i} style={{ textAlign: 'center', border: '2px solid black' }}>
@@ -31,7 +32,7 @@ const App = () => {
             })*/}
             {data.map((photoData) => {
               return (
-                <div style={{ width: '100%', height: '600px' }}>
+                <div key={photoData.id} style={{ width: '100%', height: '600px' }}>
                   <img
                     style={{
                       width: '100%',
@@ -40,7 +41,6 @@ const App = () => {
                       objectPosition: 'center',
                     }}
                     src={photoData.url_h}
-                    key={photoData.id}
                     alt={photoData.title}
                   />
                   <p style={{ position: 'absolute', top: '0', margin: '7px' }}>{photoData.title}</p>
@@ -48,6 +48,13 @@ const App = () => {
               );
             })}
           </Carousel>
+          <div
+            onClick={() => {
+              setNumOfCells(numOfCells - 1);
+            }}
+          >
+            sdkfsjdhjsdkfjskdf
+          </div>
         </>
       )}
     </>
