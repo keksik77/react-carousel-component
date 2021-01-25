@@ -2,11 +2,18 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Pagination } from './components/Pagination';
 import './style.css';
 
-let dragX1 = 0;
+let dragX = 0;
 let dragPresent = 0;
 let sliderWidth = 0;
 
-const Carousel = ({ children, numOfCells, infinity, pagination, paginationSize }) => {
+const Carousel = ({
+  children,
+  numOfCells = !numOfCells || numOfCells < 1 ? 1 : numOfCells,
+  infinity = Boolean(infinity),
+  pagination = Boolean(pagination),
+  paginationSize = !paginationSize || paginationSize < 3 ? 3 : paginationSize,
+  sliderHeight,
+}) => {
   const sliderElement = useRef(null);
   const cellSize = 100 / numOfCells;
   const [sliderPosition, setSliderPosition] = useState(infinity ? -100 : 0);
@@ -26,7 +33,7 @@ const Carousel = ({ children, numOfCells, infinity, pagination, paginationSize }
 
   const CellComponent = useMemo(
     () => (child, i) => (
-      <li className="slide" style={{ minWidth: `${cellSize}%` }} key={i}>
+      <li className="slider_cell" style={{ minWidth: `${cellSize}%` }} key={i}>
         {child}
       </li>
     ),
@@ -87,9 +94,9 @@ const Carousel = ({ children, numOfCells, infinity, pagination, paginationSize }
   const dragAction = (event) => {
     if (event.type === 'mousemove') {
       event.preventDefault();
-      dragPresent = ((dragX1 - event.clientX) / sliderWidth) * 100;
+      dragPresent = ((dragX - event.clientX) / sliderWidth) * 100;
     } else {
-      dragPresent = ((dragX1 - event.touches[0].clientX) / sliderWidth) * 80;
+      dragPresent = ((dragX - event.touches[0].clientX) / sliderWidth) * 80;
     }
 
     setTranslate(sliderPosition - dragPresent, false);
@@ -102,11 +109,11 @@ const Carousel = ({ children, numOfCells, infinity, pagination, paginationSize }
 
     if (event.type === 'mousedown') {
       event.preventDefault();
-      dragX1 = event.clientX;
+      dragX = event.clientX;
       document.onmousemove = dragAction;
       document.onmouseup = dragEnd;
     } else {
-      dragX1 = event.touches[0].clientX;
+      dragX = event.touches[0].clientX;
     }
   };
 
@@ -137,11 +144,12 @@ const Carousel = ({ children, numOfCells, infinity, pagination, paginationSize }
         onTouchMove={dragAction}
         onTouchEnd={dragEnd}
         onMouseDown={dragStart}
-        className="wrapper"
+        className="slider_wrapper"
       >
         <ul
           ref={sliderElement}
-          className="slides"
+          className="slider_container"
+          style={{ height: sliderHeight }}
           onTransitionEnd={() => {
             if (infinity) loopFunc(sliderPosition);
             dragPresent = 0;
