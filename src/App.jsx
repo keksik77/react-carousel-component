@@ -68,7 +68,13 @@ const App = () => {
           <h3>Infinity loop carousel with pagination:</h3>
           <div className={'example_carousel_item'}>
             {Array.isArray(data) && (
-              <Carousel numOfCells={2} pagination={true} paginationSize={5} sliderHeight={500}>
+              <Carousel
+                numOfCells={2}
+                infinity={true}
+                pagination={true}
+                paginationSize={5}
+                sliderHeight={500}
+              >
                 {data.map((photoData) => {
                   return (
                     <div key={photoData.id} className={'full_size'}>
